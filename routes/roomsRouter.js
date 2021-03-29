@@ -1,10 +1,13 @@
 const express = require('express');
 const roomsRouter = express.Router();
 const Rooms = require('../models/room');
+const authenticate = require('../authenticate');
+const cors = require('./cors');
 
 // https://localhost:3000/rooms Route
 roomsRouter.route('/')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, authenticate.verifyUser, (req, res, next) => {
     Rooms.find()
     .then(rooms => {
         res.sendStatus = 200;
@@ -13,7 +16,7 @@ roomsRouter.route('/')
     })
     .catch(err => next(err));
 })
-.post((req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Rooms.create(req.body)
     .then(room => {
         console.log('Room created ', room);
@@ -23,11 +26,11 @@ roomsRouter.route('/')
     })
     .catch(err => next(err));
 })
-.put((req, res) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /rooms');
 })
-.delete((req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Rooms.deleteMany()
     .then(response => {
         res.sendStatus = 200;
@@ -39,7 +42,8 @@ roomsRouter.route('/')
 
 // https://localhost:3000/rooms/roomsId Route
 roomsRouter.route('/:roomsId')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, authenticate.verifyUser, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(rooms => {
         res.sendStatus = 200;
@@ -48,11 +52,11 @@ roomsRouter.route('/:roomsId')
     })
     .catch(err => next(err));
 })
-.post((req, res) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end('POST operation not supported on /rooms');
 })
-.put((req, res, next) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(room => {
         if(room) {
@@ -85,7 +89,7 @@ roomsRouter.route('/:roomsId')
         }
     })
 })
-.delete((req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Rooms.findByIdAndDelete(req.params.roomsId)
     .then(response => {
         res.sendStatus = 200;
@@ -97,7 +101,8 @@ roomsRouter.route('/:roomsId')
 
 // https://localhost:3000/rooms/:/roomsId/guests Route
 roomsRouter.route('/:roomsId/guests')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, authenticate.verifyUser, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(rooms => {
         res.statusCode = 200;
@@ -106,7 +111,7 @@ roomsRouter.route('/:roomsId/guests')
     })
     .catch(err => next(err));
 })
-.post((req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(room => {
         if(room) {
@@ -128,11 +133,11 @@ roomsRouter.route('/:roomsId/guests')
     })
     .catch(err => next(err));
 })
-.put((req, res) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end(`PUT operation not supported on /rooms/${req.params.roomsId}/guests`);
 })
-.delete((req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(room => {
         if(room) {
@@ -158,7 +163,8 @@ roomsRouter.route('/:roomsId/guests')
 
 // https://localhost:3000/rooms/:/roomsId/guests:/guestsId Route
 roomsRouter.route('/:roomsId/guests/:guestsId')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, authenticate.verifyUser, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(room => {
         if(room && room.guests.id(req.params.guestsId)) {
@@ -177,11 +183,11 @@ roomsRouter.route('/:roomsId/guests/:guestsId')
     })
     .catch(err => next(err));
 })
-.post((req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.statusCode = 403;
     res.end(`Post operation not supported on /rooms/${req.params.roomsId}/guests/${req.params.guestsId}`);
 })
-.put((req, res, next) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(room => {
         if(room && room.guests.id(req.params.guestsId)) {
@@ -214,7 +220,7 @@ roomsRouter.route('/:roomsId/guests/:guestsId')
         
     })
 })
-.delete((req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(room => {
         if(room && room.guests.id(req.params.guestsId)) {
@@ -242,7 +248,8 @@ roomsRouter.route('/:roomsId/guests/:guestsId')
 
 // https://localhost:3000/rooms/:/roomsId/suite Route
 roomsRouter.route('/:roomsId/suite')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, authenticate.verifyUser, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(rooms => {
         res.statusCode = 200;
@@ -251,7 +258,7 @@ roomsRouter.route('/:roomsId/suite')
     })
     .catch(err => next(err));
 })
-.post((req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(room => {
         if(room) {
@@ -273,11 +280,11 @@ roomsRouter.route('/:roomsId/suite')
     })
     .catch(err => next(err));
 })
-.put((req, res) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end(`PUT operation not supported on /rooms/${req.params.roomsId}/suits`);
 })
-.delete((req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(room => {
         if(room) {
@@ -303,7 +310,8 @@ roomsRouter.route('/:roomsId/suite')
 
 // https://localhost:3000/rooms/:/roomsId/suite:/suiteId Route
 roomsRouter.route('/:roomsId/suite/:suiteId')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, authenticate.verifyUser, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(room => {
         if(room && room.suite.id(req.params.suiteId)) {
@@ -322,11 +330,11 @@ roomsRouter.route('/:roomsId/suite/:suiteId')
     })
     .catch(err => next(err));
 })
-.post((req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.statusCode = 403;
     res.end(`Post operation not supported on /rooms/${req.params.roomId}/suite/${req.params.suiteId}`);
 })
-.put((req, res, next) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Rooms.findById(req.params.roomId)
     .then(room => {
         if(room && room.suite.id(req.params.suiteId)) {
@@ -359,7 +367,7 @@ roomsRouter.route('/:roomsId/suite/:suiteId')
         
     })
 })
-.delete((req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(room => {
         if(room && room.suite.id(req.params.suiteId)) {
@@ -387,7 +395,8 @@ roomsRouter.route('/:roomsId/suite/:suiteId')
 
 // https://localhost:3000/rooms/:/roomsId/accessible Route
 roomsRouter.route('/:roomsId/accessible')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, authenticate.verifyUser, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(rooms => {
         res.statusCode = 200;
@@ -396,7 +405,7 @@ roomsRouter.route('/:roomsId/accessible')
     })
     .catch(err => next(err));
 })
-.post((req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(room => {
         if(room) {
@@ -418,11 +427,11 @@ roomsRouter.route('/:roomsId/accessible')
     })
     .catch(err => next(err));
 })
-.put((req, res) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end(`PUT operation not supported on /rooms/${req.params.roomsId}/guests`);
 })
-.delete((req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(room => {
         if(room) {
@@ -448,7 +457,8 @@ roomsRouter.route('/:roomsId/accessible')
 
 // https://localhost:3000/rooms/:/roomsId/accessible:/accessibleId Route
 roomsRouter.route('/:roomsId/accessible/:accessibleId')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, authenticate.verifyUser, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(room => {
         if(room && room.accessible.id(req.params.accessibleId)) {
@@ -467,11 +477,11 @@ roomsRouter.route('/:roomsId/accessible/:accessibleId')
     })
     .catch(err => next(err));
 })
-.post((req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.statusCode = 403;
     res.end(`Post operation not supported on /rooms/${req.params.roomId}/accessible/${req.params.accessibleId}`);
 })
-.put((req, res, next) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Rooms.findById(req.params.roomId)
     .then(room => {
         if(room && room.accessible.id(req.params.accessibleId)) {
@@ -504,7 +514,7 @@ roomsRouter.route('/:roomsId/accessible/:accessibleId')
         
     })
 })
-.delete((req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Rooms.findById(req.params.roomsId)
     .then(room => {
         if(room && room.accessible.id(req.params.accessibleId)) {

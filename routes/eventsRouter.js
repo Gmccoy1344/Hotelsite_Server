@@ -1,9 +1,12 @@
 const express = require('express');
 const eventsRouter = express.Router();
 const Events = require('../models/event');
+const authenticate = require('../authenticate');
+const cors = require('./cors');
 
 eventsRouter.route('/')
-.get((req, res) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, authenticate.verifyUser,(req, res, next) => {
     Events.find()
     .then(events => {
         res.statusCode = 200;
@@ -12,7 +15,7 @@ eventsRouter.route('/')
     })
     .catch(err => next(err));
 })
-.post((req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     Events.create(req.body)
     .then(events => {
         res.statusCode = 200;
@@ -21,11 +24,11 @@ eventsRouter.route('/')
     })
     .catch(err => next(err));
 })
-.put((req, res) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /events');
 })
-.delete((req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Events.deleteMany()
     .then(response => {
         res.statusCode = 200;
@@ -36,7 +39,8 @@ eventsRouter.route('/')
 });
 
 eventsRouter.route('/:eventId')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Events.findById(req.params.eventId)
     .then(event => {
         res.statusCode = 200;
@@ -45,11 +49,11 @@ eventsRouter.route('/:eventId')
     })
     .catch(err => next(err));
 })
-.post((req, res) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end(`POST operation not supported on /events/${req.params.eventId}`);
 })
-.put((req, res, next) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     Events.findByIdAndUpdate(req.params.eventId, {
         $set: req.body
     }, {new: true})
@@ -60,7 +64,7 @@ eventsRouter.route('/:eventId')
     })
     .catch(err => next(err));
 })
-.delete((req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     Events.findByIdAndDelete(req.params.eventId)
     .then(response => {
         res.statusCode = 200;

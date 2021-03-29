@@ -1,9 +1,12 @@
 const express = require('express');
 const offersRouter = express.Router();
 const Offers = require('../models/offer');
+const authenticate = require('../authenticate');
+const cors = require('./cors');
 
 offersRouter.route('/')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, authenticate.verifyUser, (req, res, next) => {
     Offers.find()
     .then(offers => {
         res.statusCode = 200;
@@ -12,7 +15,7 @@ offersRouter.route('/')
     })
     .catch(err => next(err));
 })
-.post((req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Offers.create(req.body)
     .then(offer => {
         console.log('Offer Created ', offer);
@@ -22,11 +25,11 @@ offersRouter.route('/')
     })
     .catch(err => next(err));
 })
-.put((req, res) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /offers');
 })
-.delete((req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Offers.deleteMany()
     .then(response => {
         res.statusCode = 200;
@@ -37,7 +40,8 @@ offersRouter.route('/')
 });
 
 offersRouter.route('/:offersId')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, authenticate.verifyUser, (req, res, next) => {
     Offers.findById(req.params.offersId)
     .then(offer => {
         res.statusCode = 200;
@@ -46,11 +50,11 @@ offersRouter.route('/:offersId')
     })
     .catch(err => next(err));
 })
-.post((req, res) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end(`POST operation not supported on /offers/${req.params.offersId}`);
 })
-.put((req, res, next) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Offers.findByIdAndUpdate(req.params.offersId, {
         $set: req.body
     }, { new: true})
@@ -61,7 +65,7 @@ offersRouter.route('/:offersId')
     })
     .catch(err => next(err));
 })
-.delete((req, res) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     Offers.findByIdAndDelete(req.params.offersId)
     .then(response => {
         res.statusCode = 200;
